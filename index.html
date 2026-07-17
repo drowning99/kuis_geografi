@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Geografi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background Orbs (digerakkan oleh anime.js) */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: #f7971e;
+            top: -100px;
+            left: -100px;
+        }
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: #ffd200;
+            bottom: -150px;
+            right: -150px;
+        }
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: #a855f7;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 32px;
+            padding: 35px 30px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+        }
+        .header h1 span {
+            background: linear-gradient(90deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .badge-round {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 6px 16px;
+            border-radius: 40px;
+            color: #ffd700;
+            font-weight: 700;
+            font-size: 14px;
+            border: 1px solid rgba(255, 215, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .progress-wrapper {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 40px;
+            height: 8px;
+            margin: 18px 0 8px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f7971e, #ffd200);
+            border-radius: 40px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            min-height: 80px;
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .option-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255, 255, 255, 0.10);
+            border-radius: 16px;
+            padding: 16px 20px;
+            color: #f0f0f0;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: 'Poppins', sans-serif;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        .option-btn .letter {
+            background: rgba(255, 255, 255, 0.08);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #ffd700;
+            flex-shrink: 0;
+            transition: 0.3s;
+        }
+        .option-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.30);
+            transform: scale(1.02);
+        }
+        .option-btn.correct {
+            background: rgba(74, 222, 128, 0.20);
+            border-color: #4ade80;
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.15);
+        }
+        .option-btn.correct .letter {
+            background: #4ade80;
+            color: #000;
+        }
+        .option-btn.wrong {
+            background: rgba(248, 113, 113, 0.20);
+            border-color: #f87171;
+            box-shadow: 0 0 30px rgba(248, 113, 113, 0.15);
+        }
+        .option-btn.wrong .letter {
+            background: #f87171;
+            color: #000;
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .next-btn {
+            background: linear-gradient(90deg, #f7971e, #ffd200);
+            border: none;
+            border-radius: 60px;
+            padding: 16px 30px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            color: #1a1a2e;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.25);
+        }
+        .next-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(255, 215, 0, 0.40);
+        }
+
+        .result-screen {
+            text-align: center;
+            padding: 20px 0;
+            opacity: 0;
+            display: none;
+        }
+        .result-screen .big-icon {
+            font-size: 80px;
+            margin-bottom: 10px;
+        }
+        .result-screen h2 {
+            color: #fff;
+            font-size: 30px;
+            font-weight: 800;
+        }
+        .result-screen .final-score {
+            font-size: 60px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 5px 0;
+        }
+        .result-screen .message {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+        .restart-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-radius: 60px;
+            padding: 14px 40px;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .restart-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 500px) {
+            .quiz-card { padding: 25px 18px; }
+            .question-text { font-size: 18px; }
+            .option-btn { font-size: 15px; padding: 14px 16px; }
+            .header h1 { font-size: 18px; }
+            .badge-round { font-size: 12px; padding: 4px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="container">
+        <div class="quiz-card" id="app">
+            <div class="header">
+                <h1>🌍 <span>Kuis</span> Geografi</h1>
+                <div class="badge-round">🏆 <span id="scoreDisplay">0/10</span></div>
+            </div>
+            <div class="progress-wrapper">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="info-row">
+                <span id="counterText">1 / 10</span>
+                <span id="roundInfo">🎯 Putaran ke-1</span>
+            </div>
+
+            <div id="quizArea">
+                <div class="question-text" id="questionText">Memuat soal...</div>
+                <div class="options-grid" id="optionsContainer"></div>
+                <button class="next-btn" id="nextBtn">▶ Lanjut</button>
+            </div>
+            <div id="resultArea" style="display:none;" class="result-screen"></div>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        // 🗂️ DATABASE 120+ SOAL LANDMARK DUNIA
+        // ================================================================
+        const masterQuestions = [
+            { q: "Menara besi setinggi 300 meter di Paris, simbol romantis dunia. Landmark apa ini?", o: ["Menara Pisa", "Menara Eiffel", "Patung Liberty", "Big Ben"], a: 1 },
+            { q: "Patung Yesus raksasa dengan tangan terbuka di puncak gunung, ada di kota mana?", o: ["Sao Paulo", "Rio de Janeiro", "Brasilia", "Salvador"], a: 1 },
+            { q: "Amfiteater batu raksasa di Roma, tempat gladiator bertarung. Namanya?", o: ["Colosseum", "Parthenon", "Pompeii", "Circus Maximus"], a: 0 },
+            { q: "Menara miring yang terkenal di Italia. Namanya?", o: ["Menara Pisa", "Campanile", "Torre di Venezia", "Florence Tower"], a: 0 },
+            { q: "Gereja megah di Barcelona karya Antoni Gaudi yang belum selesai. Namanya?", o: ["Sagrada Familia", "La Rambla", "Casa Batllo", "Park Guell"], a: 0 },
+            { q: "Katedral dengan kubah warna-warni seperti bawang di Moskow. Namanya?", o: ["Kremlin", "St. Basil's", "Red Square", "Winter Palace"], a: 1 },
+            { q: "Patung Liberty adalah hadiah dari Perancis untuk negara mana?", o: ["Inggris", "Kanada", "Amerika Serikat", "Australia"], a: 2 },
+            { q: "Jembatan emas ikonik di San Francisco. Namanya?", o: ["Brooklyn Bridge", "Golden Gate", "Tower Bridge", "Harbour Bridge"], a: 1 },
+            { q: "Gedung Putih (White House) adalah kediaman presiden negara mana?", o: ["Inggris", "Perancis", "Amerika Serikat", "Kanada"], a: 2 },
+            { q: "Menara jam ikonik di London yang sering disebut Big Ben. Nama aslinya?", o: ["Elizabeth Tower", "Victoria Tower", "Westminster Palace", "Big Ben"], a: 0 },
+            { q: "Tembok raksasa sepanjang 21.000 km ini berada di negara mana?", o: ["Jepang", "India", "China", "Korea Selatan"], a: 2 },
+            { q: "Mausoleum marmer putih di India, dibangun untuk mengenang seorang ratu. Namanya?", o: ["Taj Mahal", "Petra", "Angkor Wat", "Borobudur"], a: 0 },
+            { q: "Kota kuno yang dipahat di tebing batu berwarna merah muda di Yordania. Namanya?", o: ["Jerash", "Petra", "Wadi Rum", "Amman"], a: 1 },
+            { q: "Kuil Hindu terbesar di dunia yang terletak di Kamboja. Namanya?", o: ["Borobudur", "Angkor Wat", "Prambanan", "Bagan"], a: 1 },
+            { q: "Gunung berapi tertinggi di Jepang, sering dijadikan ikon seni. Namanya?", o: ["Fuji", "Krakatau", "Vesuvius", "Pinatubo"], a: 0 },
+            { q: "Gerbang besi di India yang dibangun untuk mengenang tentara Inggris. Namanya?", o: ["Gateway of India", "India Gate", "Qutub Minar", "Red Fort"], a: 1 },
+            { q: "Istana megah di India yang memiliki 953 jendela kecil. Namanya?", o: ["Hawa Mahal", "Lal Qila", "Taj Mahal", "Mysore Palace"], a: 0 },
+            { q: "Menara penyangga TV tertinggi di dunia (634m) di Tokyo. Namanya?", o: ["Tokyo Sky Tree", "Tokyo Tower", "Abeno Harukas", "Fukuoka Tower"], a: 0 },
+            { q: "Kota Terlarang (Forbidden City) adalah istana kuno di negara mana?", o: ["Jepang", "China", "Korea", "Vietnam"], a: 1 },
+            { q: "Patung Buddha raksasa di Nara, Jepang. Terbuat dari bahan apa?", o: ["Emas", "Perunggu", "Batu", "Kayu"], a: 1 },
+            { q: "Gedung opera dengan arsitektur seperti layar kapal di Australia. Namanya?", o: ["Sydney Opera House", "Melbourne Arts", "Harbour Bridge", "Perth Arena"], a: 0 },
+            { q: "Candi Buddha terbesar di dunia yang terletak di Jawa Tengah, Indonesia. Namanya?", o: ["Prambanan", "Borobudur", "Mendut", "Sewu"], a: 1 },
+            { q: "Candi Hindu megah di Yogyakarta yang terkenal dengan arsitektur runcingnya. Namanya?", o: ["Borobudur", "Prambanan", "Dieng", "Cetho"], a: 1 },
+            { q: "Monumen Nasional (Monas) terletak di kota apa?", o: ["Surabaya", "Bandung", "Jakarta", "Medan"], a: 2 },
+            { q: "Patung Merlion, simbol kota Singapura, berkepala apa dan berbadan apa?", o: ["Singa & Ikan", "Singa & Naga", "Naga & Ikan", "Harimau & Ikan"], a: 0 },
+            { q: "Menara Petronas Twin Towers terletak di kota mana?", o: ["Bangkok", "Kuala Lumpur", "Jakarta", "Manila"], a: 1 },
+            { q: "Air terjun yang terletak di perbatasan AS dan Kanada. Namanya?", o: ["Victoria Falls", "Angel Falls", "Niagara Falls", "Iguazu Falls"], a: 2 },
+            { q: "Bebatuan raksasa berwarna merah di tengah Australia yang disebut Uluru. Juga dikenal sebagai?", o: ["Ayers Rock", "Kata Tjuta", "Kings Canyon", "Blue Mountains"], a: 0 },
+            { q: "Kuil Emas (Golden Temple) adalah tempat suci agama Sikh di negara mana?", o: ["India", "Pakistan", "Nepal", "Sri Lanka"], a: 0 },
+            { q: "Jembatan Teluk Sydney yang terkenal dijuluki 'The Coathanger'. Namanya?", o: ["Sydney Harbour Bridge", "Gladesville Bridge", "Anzac Bridge", "Hawkesbury River"], a: 0 },
+            { q: "Gedung tertinggi di dunia (828m) di Dubai. Namanya?", o: ["Burj Khalifa", "Merdeka 118", "Shanghai Tower", "Abraj Al Bait"], a: 0 },
+            { q: "Piramida terbesar di Mesir, dibangun untuk Firaun Khufu. Namanya?", o: ["Piramida Giza", "Piramida Djoser", "Sphinx", "Piramida Merah"], a: 0 },
+            { q: "Masjid megah berkubah emas dan 6 menara di Istanbul, dulunya gereja. Namanya?", o: ["Masjid Nabawi", "Hagia Sophia", "Blue Mosque", "Masjid Al-Aqsa"], a: 1 },
+            { q: "Sphinx adalah patung mitologi berkepala manusia dan berbadan hewan apa?", o: ["Singa", "Kuda", "Banteng", "Elang"], a: 0 },
+            { q: "Kota kuno Petra di Yordania dijuluki sebagai 'Kota...'?", o: ["Merah", "Hilang", "Emas", "Awan"], a: 0 },
+            { q: "Masjid Sultan Ahmed di Istanbul lebih dikenal dengan sebutan?", o: ["Masjid Biru", "Masjid Merah", "Masjid Emas", "Masjid Putih"], a: 0 },
+            { q: "Gunung Meja (Table Mountain) adalah ikon kota mana di Afrika?", o: ["Kairo", "Cape Town", "Johannesburg", "Nairobi"], a: 1 },
+            { q: "Air Terjun Victoria terletak di perbatasan Zambia dan negara mana?", o: ["Zimbabwe", "Botswana", "Namibia", "Mozambik"], a: 0 },
+            { q: "Gurun Sahara adalah gurun terbesar di dunia, terletak di benua mana?", o: ["Asia", "Afrika", "Australia", "Amerika"], a: 1 },
+            { q: "Menara Kembar Petronas adalah gedung kembar tertinggi di dunia pada tahun 1998-2004. Terletak di negara mana?", o: ["Indonesia", "Malaysia", "Singapura", "Thailand"], a: 1 },
+            { q: "Benteng kuno di puncak bukit di Athena, Yunani. Namanya?", o: ["Parthenon", "Acropolis", "Olympia", "Delphi"], a: 1 },
+            { q: "Gerbang Brandenburg adalah ikon kota apa di Jerman?", o: ["Munich", "Hamburg", "Berlin", "Frankfurt"], a: 2 },
+            { q: "Menara Miring Pisa terletak di kota Italia mana?", o: ["Roma", "Pisa", "Florence", "Venesia"], a: 1 },
+            { q: "Lapangan Merah dan Kremlin terletak di kota mana?", o: ["St. Petersburg", "Moscow", "Kazan", "Novosibirsk"], a: 1 },
+            { q: "Istana Versailes adalah istana raja Perancis yang terletak di dekat kota mana?", o: ["Paris", "Lyon", "Marseille", "Nice"], a: 0 },
+            { q: "Stonehenge adalah situs prasejarah di negara mana?", o: ["Inggris", "Perancis", "Jerman", "Spanyol"], a: 0 },
+            { q: "Katedral St. Patrick adalah ikon kota mana di Irlandia?", o: ["Cork", "Limerick", "Dublin", "Galway"], a: 2 },
+            { q: "Alhambra adalah istana benteng megah di kota Granada, negara mana?", o: ["Spanyol", "Portugal", "Italia", "Yunani"], a: 0 },
+            { q: "Menara Eiffel dibangun untuk acara apa pada tahun 1889?", o: ["Exposition Universelle", "Olimpiade", "Perang Dunia", "Revolusi Perancis"], a: 0 },
+            { q: "Danau Como adalah danau indah di negara mana?", o: ["Swiss", "Italia", "Austria", "Jerman"], a: 1 },
+            { q: "Tentara Terakota (Terracotta Army) ditemukan di kota mana, China?", o: ["Beijing", "Xi'an", "Shanghai", "Guangzhou"], a: 1 },
+            { q: "Istana Potala adalah istana megah di Tibet, kini menjadi museum. Terletak di kota mana?", o: ["Lhasa", "Kathmandu", "Urumqi", "Chengdu"], a: 0 },
+            { q: "Istana Raja Thailand (Grand Palace) terletak di kota mana?", o: ["Phuket", "Chiang Mai", "Bangkok", "Pattaya"], a: 2 },
+            { q: "Kuil Meiji adalah kuil Shinto yang terletak di kota mana, Jepang?", o: ["Kyoto", "Osaka", "Tokyo", "Nagoya"], a: 2 },
+            { q: "Gyeongbokgung adalah istana kerajaan di kota mana, Korea Selatan?", o: ["Busan", "Incheon", "Seoul", "Daegu"], a: 2 },
+            { q: "Himeji Castle adalah kastil Jepang yang dijuluki 'Kastil Bangau Putih'. Di kota mana?", o: ["Himeji", "Kyoto", "Nara", "Nagoya"], a: 0 },
+            { q: "Candi Bagan adalah ribuan candi Buddha di negara mana?", o: ["Myanmar", "Thailand", "Laos", "Vietnam"], a: 0 },
+            { q: "Qutub Minar adalah menara batu bata tertinggi di dunia, terletak di India kota mana?", o: ["Delhi", "Mumbai", "Kolkata", "Chennai"], a: 0 },
+            { q: "Taman Pattaya adalah tempat wisata pantai di negara mana?", o: ["Thailand", "Vietnam", "Kamboja", "Filipina"], a: 0 },
+            { q: "Kuil Batu (Ellora Caves) adalah situs warisan dunia di negara mana?", o: ["India", "Nepal", "Sri Lanka", "Bangladesh"], a: 0 },
+            { q: "Kota kuno Machu Picchu terletak di negara Amerika Selatan mana?", o: ["Peru", "Chili", "Ekuador", "Kolombia"], a: 0 },
+            { q: "Chichen Itza adalah situs piramida peradaban Maya di negara mana?", o: ["Meksiko", "Guatemala", "Honduras", "Kosta Rika"], a: 0 },
+            { q: "Patung Christ the Redeemer memiliki lebar bentangan tangan berapa meter?", o: ["18 m", "28 m", "38 m", "48 m"], a: 1 },
+            { q: "Grand Canyon adalah lembah sungai raksasa di negara bagian Amerika mana?", o: ["California", "Texas", "Arizona", "Nevada"], a: 2 },
+            { q: "Gedung Pentagon adalah markas besar militer Amerika, terletak di kota mana?", o: ["New York", "Washington D.C.", "Los Angeles", "Chicago"], a: 1 },
+            { q: "Menara CN Tower adalah ikon kota mana di Kanada?", o: ["Vancouver", "Montreal", "Toronto", "Ottawa"], a: 2 },
+            { q: "Pantai Copacabana adalah pantai terkenal di negara mana?", o: ["Argentina", "Uruguay", "Brasil", "Kolombia"], a: 2 },
+            { q: "Jalur Panama yang menghubungkan Samudra Pasifik dan Atlantik. Terletak di negara mana?", o: ["Panama", "Kosta Rika", "Nikaragua", "Honduras"], a: 0 },
+            { q: "Piramida Matahari di Teotihuacan terletak di negara mana?", o: ["Meksiko", "Peru", "Guatemala", "Ekuador"], a: 0 },
+            { q: "Patung Moai adalah patung batu raksasa di Pulau Paskah, wilayah negara mana?", o: ["Chili", "Peru", "Ekuador", "Argentina"], a: 0 },
+            { q: "Kastil Neuschwanstein adalah kastil dongeng di Jerman yang menjadi inspirasi Disneyland. Di kota mana?", o: ["Berlin", "Munich", "Füssen", "Stuttgart"], a: 2 },
+            { q: "Air Mancur Trevi di Roma, jika melempar koin dipercaya akan kembali ke Roma. Terletak di negara mana?", o: ["Perancis", "Spanyol", "Italia", "Portugal"], a: 2 },
+            { q: "Duomo di Milan adalah gereja gotik raksasa. Di kota mana?", o: ["Roma", "Venice", "Milan", "Florence"], a: 2 },
+            { q: "Museum Louvre adalah museum seni terbesar di dunia. Terletak di kota mana?", o: ["London", "Paris", "Madrid", "Berlin"], a: 1 },
+            { q: "Jembatan Charles (Charles Bridge) adalah jembatan bersejarah di kota mana?", o: ["Wina", "Budapest", "Prague", "Krakow"], a: 2 },
+            { q: "Gedung Reichstag adalah gedung parlemen Jerman yang terletak di kota mana?", o: ["Berlin", "Bonn", "Hamburg", "Frankfurt"], a: 0 },
+            { q: "Katedral Notre-Dame terbakar hebat pada tahun 2019. Terletak di kota mana?", o: ["London", "Paris", "Roma", "Madrid"], a: 1 },
+            { q: "Istana Buckingham adalah kediaman kerajaan Inggris. Terletak di kota mana?", o: ["Edinburgh", "London", "Liverpool", "Manchester"], a: 1 },
+            { q: "Menara Porto adalah menara kuno di kota Porto, negara mana?", o: ["Portugal", "Spanyol", "Perancis", "Italia"], a: 0 },
+            { q: "Akershus Fortress adalah benteng abad pertengahan di kota Oslo, negara mana?", o: ["Denmark", "Norwegia", "Swedia", "Finlandia"], a: 1 },
+            { q: "Menara Taipei 101 adalah gedung pencakar langit di negara mana?", o: ["China", "Taiwan", "Hong Kong", "Makau"], a: 1 },
+            { q: "Shanghai Tower adalah gedung tertinggi kedua di dunia, terletak di negara mana?", o: ["Jepang", "China", "Korea Selatan", "Singapura"], a: 1 },
+            { q: "Kuil Senso-ji adalah kuil tertua di Tokyo. Agama apa yang dipraktikkan di sana?", o: ["Shinto", "Buddha", "Tao", "Hindu"], a: 1 },
+            { q: "Jalur Hijau (Banaue Rice Terraces) adalah terasering sawah kuno di negara mana?", o: ["Thailand", "Vietnam", "Filipina", "Indonesia"], a: 2 },
+            { q: "Gunung Rinjani adalah gunung berapi kedua tertinggi di Indonesia. Terletak di pulau mana?", o: ["Sumatra", "Jawa", "Lombok", "Sulawesi"], a: 2 },
+            { q: "Taman Nasional Komodo terkenal dengan hewan purba bernama Komodo. Di provinsi mana?", o: ["NTT", "NTB", "Bali", "Maluku"], a: 0 },
+            { q: "Danau Toba adalah danau vulkanik terbesar di dunia. Terletak di provinsi mana?", o: ["Aceh", "Sumatra Utara", "Sumatra Barat", "Riau"], a: 1 },
+            { q: "Candi Penataran adalah candi Hindu terbesar di Jawa Timur. Terletak di kota mana?", o: ["Malang", "Surabaya", "Blitar", "Kediri"], a: 2 },
+            { q: "Taman Mini Indonesia Indah (TMII) adalah taman budaya di kota mana?", o: ["Bandung", "Bogor", "Jakarta", "Tangerang"], a: 2 },
+            { q: "Kota Vatikan adalah negara terkecil di dunia, terletak di dalam kota mana?", o: ["Paris", "London", "Roma", "Madrid"], a: 2 },
+            { q: "Piramida Giza adalah satu-satunya dari 7 Keajaiban Dunia Kuno yang masih bertahan. Di negara mana?", o: ["Mesir", "Irak", "Yunani", "Turki"], a: 0 },
+            { q: "Garis khatulistiwa melintasi kota Pontianak. Di Indonesia provinsi mana?", o: ["Kalbar", "Kalteng", "Kalsel", "Kaltim"], a: 0 },
+            { q: "Gurun Gobi adalah gurun terbesar di Asia, melintasi China dan negara mana?", o: ["Mongolia", "Rusia", "India", "Kazakhstan"], a: 0 },
+            { q: "Danau Baikal adalah danau air tawar terdalam di dunia, terletak di negara mana?", o: ["Rusia", "Kazakhstan", "Mongolia", "China"], a: 0 },
+            { q: "Air Terjun Angel adalah air terjun tertinggi di dunia (979m), terletak di negara mana?", o: ["Brasil", "Argentina", "Venezuela", "Kolombia"], a: 2 },
+            { q: "Selat Gibraltar menghubungkan Samudra Atlantik dengan laut apa?", o: ["Laut Tengah", "Laut Merah", "Laut Kaspia", "Laut Hitam"], a: 0 },
+            { q: "Kepulauan Galapagos terkenal dengan satwa endemiknya. Milik negara mana?", o: ["Peru", "Chili", "Ekuador", "Kolombia"], a: 2 },
+            { q: "Monte Carlo adalah distrik mewah di negara kecil mana di Eropa?", o: ["Monako", "Luksemburg", "San Marino", "Andorra"], a: 0 },
+            { q: "Gunung Kilimanjaro adalah gunung tertinggi di Afrika. Terletak di negara mana?", o: ["Kenya", "Tanzania", "Uganda", "Etiopia"], a: 1 },
+            { q: "Menara Allianz Arena adalah stadion sepak bola dengan pencahayaan warna-warni. Terletak di kota Jerman mana?", o: ["Berlin", "Munich", "Dortmund", "Hamburg"], a: 1 },
+            { q: "Stadion Maracana adalah stadion sepak bola legendaris di negara mana?", o: ["Argentina", "Brasil", "Uruguay", "Kolombia"], a: 1 },
+            { q: "Gedung Chrysler adalah gedung Art Deco ikonik di kota mana?", o: ["New York", "Chicago", "Los Angeles", "Miami"], a: 0 },
+            { q: "Pulau Santorini adalah pulau vulkanik indah dengan rumah putih di negara mana?", o: ["Yunani", "Italia", "Spanyol", "Turki"], a: 0 },
+            { q: "Taman Nasional Yellowstone adalah taman nasional pertama di dunia, di negara mana?", o: ["Kanada", "Amerika Serikat", "Meksiko", "Kosta Rika"], a: 1 },
+            { q: "Jembatan Rialto adalah jembatan tertua di atas Kanal Besar. Terletak di kota Italia mana?", o: ["Roma", "Milan", "Venice", "Florence"], a: 2 },
+            { q: "Masjid Nabawi terletak di kota Madinah, di negara mana?", o: ["Arab Saudi", "Yordania", "Mesir", "Suriah"], a: 0 },
+            { q: "Candi Sukuh adalah candi yang berbentuk seperti piramida terpotong, terletak di Jawa Tengah dekat kota mana?", o: ["Solo", "Yogyakarta", "Semarang", "Magelang"], a: 0 },
+            { q: "Taman Hiburan Disneyland pertama di dunia terletak di negara bagian AS mana?", o: ["Florida", "California", "Texas", "New York"], a: 1 },
+            { q: "Kota Tua (Old Town) di Tallinn adalah salah satu kota tua abad pertengahan terbaik di Eropa. Negara mana?", o: ["Estonia", "Latvia", "Lituania", "Finlandia"], a: 0 },
+            { q: "Jembatan Golden Gate memiliki warna internasional yang dikenal dengan sebutan?", o: ["Merah", "Orange", "International Orange", "Merah Marun"], a: 2 },
+            { q: "Gedung Sydney Opera House diresmikan pada tahun berapa?", o: ["1959", "1969", "1973", "1985"], a: 2 },
+            { q: "Candi Borobudur dibangun pada abad ke berapa?", o: ["Abad ke-7", "Abad ke-8", "Abad ke-9", "Abad ke-10"], a: 2 },
+            { q: "Burj Khalifa memiliki jumlah lantai sebanyak?", o: ["128", "148", "163", "183"], a: 2 },
+            { q: "Masjid Hagia Sophia di Istanbul saat ini berfungsi sebagai?", o: ["Museum", "Masjid", "Gereja", "Sinagog"], a: 1 },
+            { q: "Patung Liberty memegang obor di tangan kanan dan apa di tangan kiri?", o: ["Buku", "Mahkota", "Tablet", "Pedang"], a: 2 },
+            { q: "Colosseum di Roma mampu menampung sekitar berapa penonton?", o: ["30.000", "50.000", "80.000", "100.000"], a: 1 },
+            { q: "Taj Mahal dibangun oleh Kaisar Shah Jahan untuk mengenang siapa?", o: ["Istrinya", "Ibunya", "Ayahnya", "Putranya"], a: 0 },
+            { q: "Tembok Besar China memiliki panjang sekitar?", o: ["13.000 km", "21.000 km", "28.000 km", "35.000 km"], a: 1 },
+            { q: "Machu Picchu berada di ketinggian berapa meter di atas permukaan laut?", o: ["1.500 m", "2.430 m", "3.200 m", "4.100 m"], a: 1 },
+            { q: "Angkor Wat awalnya dibangun sebagai kuil untuk dewa Hindu siapa?", o: ["Siwa", "Wisnu", "Brahma", "Indra"], a: 1 }
+        ];
+
+        // ================================================================
+        // 🔀 LOGIKA: 10 SOAL PER PUTARAN + ANIME.JS
+        // ================================================================
+        const QUESTIONS_PER_ROUND = 10;
+        let currentRoundQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+        let roundCounter = 1;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startNewRound() {
+            // Acak bank soal dan ambil 10
+            shuffleArray(masterQuestions);
+            currentRoundQuestions = masterQuestions.slice(0, QUESTIONS_PER_ROUND);
+            // Acak posisi jawaban di setiap soal
+            currentRoundQuestions.forEach(q => {
+                const paired = q.o.map((text, idx) => ({ text, idx }));
+                shuffleArray(paired);
+                q.o = paired.map(p => p.text);
+                const correctText = q.o[q.a];
+                q.a = q.o.indexOf(correctText);
+            });
+
+            currentIndex = 0;
+            score = 0;
+            isAnswered = false;
+            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('quizArea').style.display = 'block';
+            document.getElementById('roundInfo').textContent = `🎯 Putaran ke-${roundCounter}`;
+            roundCounter++;
+
+            // Animasi masuk kartu
+            anime({
+                targets: '.quiz-card',
+                scale: [0.92, 1],
+                opacity: [0, 1],
+                duration: 700,
+                easing: 'easeOutQuad'
+            });
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            isAnswered = false;
+            const q = currentRoundQuestions[currentIndex];
+            document.getElementById('questionText').textContent = q.q;
+            document.getElementById('counterText').textContent = `${currentIndex + 1} / ${QUESTIONS_PER_ROUND}`;
+            document.getElementById('scoreDisplay').textContent = `${score}/${QUESTIONS_PER_ROUND}`;
+            document.getElementById('nextBtn').style.display = 'none';
+
+            // Animasi Progress Bar
+            const progress = ((currentIndex + 1) / QUESTIONS_PER_ROUND) * 100;
+            anime({
+                targets: '#progressBar',
+                width: progress + '%',
+                duration: 600,
+                easing: 'easeInOutQuad'
+            });
+
+            // Render Opsi
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+            q.o.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span class="letter">${letters[idx]}</span> ${opt}`;
+                btn.dataset.index = idx;
+                btn.onclick = () => selectAnswer(idx);
+                container.appendChild(btn);
+            });
+
+            // Anime.js: Animasi Soal (geser dari kiri)
+            anime({
+                targets: '#questionText',
+                opacity: [0, 1],
+                translateX: [-25, 0],
+                duration: 550,
+                easing: 'easeOutCubic'
+            });
+
+            // Anime.js: Animasi Opsi (muncul bergantian)
+            anime({
+                targets: '.option-btn',
+                opacity: [0, 1],
+                translateY: [25, 0],
+                scale: [0.92, 1],
+                duration: 450,
+                delay: anime.stagger(80),
+                easing: 'easeOutQuad'
+            });
+        }
+
+        function selectAnswer(selected) {
+            if (isAnswered) return;
+            isAnswered = true;
+            const q = currentRoundQuestions[currentIndex];
+            const btns = document.querySelectorAll('.option-btn');
+
+            btns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.a) btn.classList.add('correct');
+                if (idx === selected && idx !== q.a) btn.classList.add('wrong');
+            });
+
+            // Anime.js Efek Benar/Salah
+            const selectedBtn = btns[selected];
+            if (selected === q.a) {
+                // Jawaban Benar: Bounce + Skor
+                anime({
+                    targets: selectedBtn,
+                    scale: [1, 1.08, 1],
+                    duration: 400,
+                    easing: 'easeOutQuad'
+                });
+                score++;
+                // Animasi Skor
+                anime({
+                    targets: '#scoreDisplay',
+                    opacity: [1, 0.5, 1],
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            } else {
+                // Jawaban Salah: Shake
+                anime({
+                    targets: selectedBtn,
+                    translateX: [-15, 15, -10, 10, -5, 5, 0],
+                    duration: 500,
+                    easing: 'easeOutQuad'
+                });
+            }
+
+            document.getElementById('scoreDisplay').textContent = `${score}/${QUESTIONS_PER_ROUND}`;
+
+            if (currentIndex < QUESTIONS_PER_ROUND - 1) {
+                document.getElementById('nextBtn').style.display = 'block';
+                document.getElementById('nextBtn').textContent = '▶ Pertanyaan Berikutnya';
+            } else {
+                document.getElementById('nextBtn').style.display = 'block';
+                document.getElementById('nextBtn').textContent = '🏁 Lihat Hasil Akhir';
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quizArea').style.display = 'none';
+            const resultArea = document.getElementById('resultArea');
+            resultArea.style.display = 'block';
+            resultArea.style.opacity = 0;
+
+            const total = QUESTIONS_PER_ROUND;
+            const pct = Math.round((score / total) * 100);
+            let icon, msg, grade;
+
+            if (pct === 100) { icon = '🏆';
+                msg = 'Sempurna! Anda Master Geografi sejati!';
+                grade = 'A+' } else if (pct >= 80) { icon = '🌟';
+                msg = 'Luar biasa! Pengetahuan Anda sangat luas!';
+                grade = 'A' } else if (pct >= 60) { icon = '💪';
+                msg = 'Bagus! Terus eksplorasi dunia!';
+                grade = 'B' } else if (pct >= 40) { icon = '📚';
+                msg = 'Jangan menyerah! Baca lebih banyak tentang landmark dunia.';
+                grade = 'C' } else { icon = '🌍';
+                msg = 'Ayo tingkatkan lagi! Dunia sangat luas untuk dijelajahi.';
+                grade = 'D' }
+
+            resultArea.innerHTML = `
+                <div class="big-icon">${icon}</div>
+                <h2>Kuis Selesai!</h2>
+                <div class="final-score">${score} / ${total}</div>
+                <p style="color:rgba(255,255,255,0.4); font-weight:700; font-size:14px;">Grade: ${grade}</p>
+                <div class="message">${msg}</div>
+                <button class="restart-btn" onclick="restartQuiz()">🔄 Ambil 10 Soal Baru</button>
+            `;
+
+            // Anime.js Muncul Hasil
+            anime({
+                targets: resultArea,
+                opacity: [0, 1],
+                translateY: [30, 0],
+                duration: 600,
+                easing: 'easeOutQuad'
+            });
+        }
+
+        function restartQuiz() {
+            // Animasi keluar kartu
+            anime({
+                targets: '.quiz-card',
+                scale: [1, 0.95],
+                opacity: [1, 0.6],
+                duration: 300,
+                easing: 'easeOutQuad',
+                complete: () => {
+                    startNewRound();
+                }
+            });
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            currentIndex++;
+            if (currentIndex < QUESTIONS_PER_ROUND) {
+                renderQuestion();
+            } else {
+                showResult();
+            }
+        });
+
+        // ================================================================
+        // 🚀 MULAI PUTARAN PERTAMA
+        // ================================================================
+        startNewRound();
+
+        // ================================================================
+        // ✨ ANIME.JS: Background Orbs Bergerak Melayang
+        // ================================================================
+        anime({
+            targets: '.orb-1',
+            translateX: [0, 60, 0],
+            translateY: [0, -40, 0],
+            duration: 12000,
+            loop: true,
+            easing: 'easeInOutQuad'
+        });
+        anime({
+            targets: '.orb-2',
+            translateX: [0, -70, 0],
+            translateY: [0, 50, 0],
+            duration: 15000,
+            loop: true,
+            easing: 'easeInOutQuad'
+        });
+        anime({
+            targets: '.orb-3',
+            scale: [1, 1.2, 1],
+            opacity: [0.2, 0.4, 0.2],
+            duration: 8000,
+            loop: true,
+            easing: 'easeInOutQuad'
+        });
+    </script>
+
+</body>
+</html>
