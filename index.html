@@ -311,7 +311,7 @@
 
     <script>
         // ================================================================
-        // 🗂️ DATABASE SOAL (TETAP UTUH, TIDAK PERNAH DIUBAH)
+        // 🗂️ DATABASE SOAL (SUDAH DIPERBAIKI FAKTANYA)
         // ================================================================
         const masterQuestions = [
             { q: "Menara besi setinggi 300 meter di Paris, simbol romantis dunia. Landmark apa ini?", o: ["Menara Pisa", "Menara Eiffel", "Patung Liberty", "Big Ben"], a: 1 },
@@ -329,7 +329,8 @@
             { q: "Kota kuno yang dipahat di tebing batu berwarna merah muda di Yordania. Namanya?", o: ["Jerash", "Petra", "Wadi Rum", "Amman"], a: 1 },
             { q: "Kuil Hindu terbesar di dunia yang terletak di Kamboja. Namanya?", o: ["Borobudur", "Angkor Wat", "Prambanan", "Bagan"], a: 1 },
             { q: "Gunung berapi tertinggi di Jepang, sering dijadikan ikon seni. Namanya?", o: ["Fuji", "Krakatau", "Vesuvius", "Pinatubo"], a: 0 },
-            { q: "Gerbang besi di India yang dibangun untuk mengenang tentara Inggris. Namanya?", o: ["Gateway of India", "India Gate", "Qutub Minar", "Red Fort"], a: 1 },
+            // Soal India Gate diperbaiki deskripsinya
+            { q: "Gerbang peringatan di India yang dibangun untuk menghormati tentara India yang gugur dalam Perang Dunia I. Namanya?", o: ["Gateway of India", "India Gate", "Qutub Minar", "Red Fort"], a: 1 },
             { q: "Istana megah di India yang memiliki 953 jendela kecil. Namanya?", o: ["Hawa Mahal", "Lal Qila", "Taj Mahal", "Mysore Palace"], a: 0 },
             { q: "Menara penyangga TV tertinggi di dunia (634m) di Tokyo. Namanya?", o: ["Tokyo Sky Tree", "Tokyo Tower", "Abeno Harukas", "Fukuoka Tower"], a: 0 },
             { q: "Kota Terlarang (Forbidden City) adalah istana kuno di negara mana?", o: ["Jepang", "China", "Korea", "Vietnam"], a: 1 },
@@ -346,7 +347,8 @@
             { q: "Jembatan Teluk Sydney yang terkenal dijuluki 'The Coathanger'. Namanya?", o: ["Sydney Harbour Bridge", "Gladesville Bridge", "Anzac Bridge", "Hawkesbury River"], a: 0 },
             { q: "Gedung tertinggi di dunia (828m) di Dubai. Namanya?", o: ["Burj Khalifa", "Merdeka 118", "Shanghai Tower", "Abraj Al Bait"], a: 0 },
             { q: "Piramida terbesar di Mesir, dibangun untuk Firaun Khufu. Namanya?", o: ["Piramida Giza", "Piramida Djoser", "Sphinx", "Piramida Merah"], a: 0 },
-            { q: "Masjid megah berkubah emas dan 6 menara di Istanbul, dulunya gereja. Namanya?", o: ["Masjid Nabawi", "Hagia Sophia", "Blue Mosque", "Masjid Al-Aqsa"], a: 1 },
+            // Soal Hagia Sophia: jumlah menara dikoreksi menjadi 4, deskripsi "berkubah emas" diubah menjadi "berkubah besar"
+            { q: "Masjid megah berkubah besar dan 4 menara di Istanbul, dulunya gereja. Namanya?", o: ["Masjid Nabawi", "Hagia Sophia", "Blue Mosque", "Masjid Al-Aqsa"], a: 1 },
             { q: "Sphinx adalah patung mitologi berkepala manusia dan berbadan hewan apa?", o: ["Singa", "Kuda", "Banteng", "Elang"], a: 0 },
             { q: "Kota kuno Petra di Yordania dijuluki sebagai 'Kota...'?", o: ["Merah", "Hilang", "Emas", "Awan"], a: 0 },
             { q: "Masjid Sultan Ahmed di Istanbul lebih dikenal dengan sebutan?", o: ["Masjid Biru", "Masjid Merah", "Masjid Emas", "Masjid Putih"], a: 0 },
@@ -454,43 +456,27 @@
             return array;
         }
 
-        // ================================================================
-        // 🔧 FUNGSI DEEP COPY (SALINAN DALAM) UNTUK OBJEK SOAL
-        // ================================================================
         function deepCopyQuestion(q) {
             return {
                 q: q.q,
-                o: [...q.o],     // salinan baru array pilihan
+                o: [...q.o],
                 a: q.a
             };
         }
 
         function startNewRound() {
-            // 1. Acak bank soal (hanya urutannya saja, tanpa mengubah objek)
             shuffleArray(masterQuestions);
-            
-            // 2. Ambil 10 soal pertama, tapi buat SALINAN DALAM dari setiap objek
-            //    agar masterQuestions tetap murni dan tidak pernah berubah.
             const rawQuestions = masterQuestions.slice(0, QUESTIONS_PER_ROUND);
             currentRoundQuestions = rawQuestions.map(q => deepCopyQuestion(q));
 
-            // 3. Acak posisi pilihan jawaban di setiap soal (AMAN, karena ini salinan)
             currentRoundQuestions.forEach(q => {
-                // Simpan teks jawaban benar SEBELUM diacak
                 const correctAnswerText = q.o[q.a];
-                
-                // Buat pasangan [teks, indeks] lalu acak
                 const paired = q.o.map((text, idx) => ({ text, idx }));
                 shuffleArray(paired);
-                
-                // Timpa array o dengan teks yang sudah diacak
                 q.o = paired.map(p => p.text);
-                
-                // Cari posisi baru dari teks jawaban benar yang sudah disimpan
                 q.a = q.o.indexOf(correctAnswerText);
             });
 
-            // 4. Reset state
             currentIndex = 0;
             score = 0;
             isAnswered = false;
@@ -499,7 +485,6 @@
             document.getElementById('roundInfo').textContent = `🎯 Putaran ke-${roundCounter}`;
             roundCounter++;
 
-            // Animasi masuk kartu
             anime({
                 targets: '.quiz-card',
                 scale: [0.92, 1],
@@ -519,7 +504,6 @@
             document.getElementById('scoreDisplay').textContent = `${score}/${QUESTIONS_PER_ROUND}`;
             document.getElementById('nextBtn').style.display = 'none';
 
-            // Animasi Progress Bar
             const progress = ((currentIndex + 1) / QUESTIONS_PER_ROUND) * 100;
             anime({
                 targets: '#progressBar',
@@ -528,7 +512,6 @@
                 easing: 'easeInOutQuad'
             });
 
-            // Render Opsi
             const container = document.getElementById('optionsContainer');
             container.innerHTML = '';
             const letters = ['A', 'B', 'C', 'D'];
@@ -541,7 +524,6 @@
                 container.appendChild(btn);
             });
 
-            // Anime.js: Animasi Soal (geser dari kiri)
             anime({
                 targets: '#questionText',
                 opacity: [0, 1],
@@ -550,7 +532,6 @@
                 easing: 'easeOutCubic'
             });
 
-            // Anime.js: Animasi Opsi (muncul bergantian)
             anime({
                 targets: '.option-btn',
                 opacity: [0, 1],
@@ -574,10 +555,8 @@
                 if (idx === selected && idx !== q.a) btn.classList.add('wrong');
             });
 
-            // Anime.js Efek Benar/Salah
             const selectedBtn = btns[selected];
             if (selected === q.a) {
-                // Jawaban Benar: Bounce + Skor
                 anime({
                     targets: selectedBtn,
                     scale: [1, 1.08, 1],
@@ -585,7 +564,6 @@
                     easing: 'easeOutQuad'
                 });
                 score++;
-                // Animasi Skor
                 anime({
                     targets: '#scoreDisplay',
                     opacity: [1, 0.5, 1],
@@ -593,7 +571,6 @@
                     easing: 'easeOutQuad'
                 });
             } else {
-                // Jawaban Salah: Shake
                 anime({
                     targets: selectedBtn,
                     translateX: [-15, 15, -10, 10, -5, 5, 0],
@@ -644,7 +621,6 @@
                 <button class="restart-btn" onclick="restartQuiz()">🔄 Ambil 10 Soal Baru</button>
             `;
 
-            // Anime.js Muncul Hasil
             anime({
                 targets: resultArea,
                 opacity: [0, 1],
@@ -655,7 +631,6 @@
         }
 
         function restartQuiz() {
-            // Animasi keluar kartu
             anime({
                 targets: '.quiz-card',
                 scale: [1, 0.95],
@@ -677,14 +652,10 @@
             }
         });
 
-        // ================================================================
-        // 🚀 MULAI PUTARAN PERTAMA
-        // ================================================================
+        // Mulai putaran pertama
         startNewRound();
 
-        // ================================================================
-        // ✨ ANIME.JS: Background Orbs Bergerak Melayang
-        // ================================================================
+        // Animasi latar orb
         anime({
             targets: '.orb-1',
             translateX: [0, 60, 0],
