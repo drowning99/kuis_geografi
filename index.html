@@ -360,7 +360,7 @@
             { q: "Gerbang Brandenburg adalah ikon kota apa di Jerman?", o: ["Munich", "Hamburg", "Berlin", "Frankfurt"], a: 2 },
             { q: "Menara Miring Pisa terletak di kota Italia mana?", o: ["Roma", "Pisa", "Florence", "Venesia"], a: 1 },
             { q: "Lapangan Merah dan Kremlin terletak di kota mana?", o: ["St. Petersburg", "Moscow", "Kazan", "Novosibirsk"], a: 1 },
-            { q: "Istana Versailes adalah istana raja Perancis yang terletak di dekat kota mana?", o: ["Paris", "Lyon", "Marseille", "Nice"], a: 0 },
+            { q: "Istana Versailles adalah istana raja Perancis yang terletak di dekat kota mana?", o: ["Paris", "Lyon", "Marseille", "Nice"], a: 0 },
             { q: "Stonehenge adalah situs prasejarah di negara mana?", o: ["Inggris", "Perancis", "Jerman", "Spanyol"], a: 0 },
             { q: "Katedral St. Patrick adalah ikon kota mana di Irlandia?", o: ["Cork", "Limerick", "Dublin", "Galway"], a: 2 },
             { q: "Alhambra adalah istana benteng megah di kota Granada, negara mana?", o: ["Spanyol", "Portugal", "Italia", "Yunani"], a: 0 },
@@ -460,13 +460,21 @@
             // Acak bank soal dan ambil 10
             shuffleArray(masterQuestions);
             currentRoundQuestions = masterQuestions.slice(0, QUESTIONS_PER_ROUND);
-            // Acak posisi jawaban di setiap soal
+            
+            // Acak posisi pilihan jawaban di setiap soal (DENGAN LOGIKA YANG BENAR)
             currentRoundQuestions.forEach(q => {
+                // 1. SIMPAN DULU teks jawaban yang benar SEBELUM diacak
+                const correctAnswerText = q.o[q.a];
+                
+                // 2. Buat pasangan [teks, indeks] lalu acak
                 const paired = q.o.map((text, idx) => ({ text, idx }));
                 shuffleArray(paired);
+                
+                // 3. Timpa array o dengan teks yang sudah diacak
                 q.o = paired.map(p => p.text);
-                const correctText = q.o[q.a];
-                q.a = q.o.indexOf(correctText);
+                
+                // 4. Cari posisi baru dari teks jawaban benar yang sudah disimpan tadi
+                q.a = q.o.indexOf(correctAnswerText);
             });
 
             currentIndex = 0;
