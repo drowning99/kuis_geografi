@@ -25,7 +25,6 @@
             position: relative;
         }
 
-        /* Background Orbs (digerakkan oleh anime.js) */
         .orb {
             position: fixed;
             border-radius: 50%;
@@ -283,7 +282,6 @@
 </head>
 <body>
 
-    <!-- Background Orbs -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
@@ -313,7 +311,7 @@
 
     <script>
         // ================================================================
-        // 🗂️ DATABASE 120+ SOAL LANDMARK DUNIA
+        // 🗂️ DATABASE SOAL (TETAP UTUH, TIDAK PERNAH DIUBAH)
         // ================================================================
         const masterQuestions = [
             { q: "Menara besi setinggi 300 meter di Paris, simbol romantis dunia. Landmark apa ini?", o: ["Menara Pisa", "Menara Eiffel", "Patung Liberty", "Big Ben"], a: 1 },
@@ -456,27 +454,43 @@
             return array;
         }
 
+        // ================================================================
+        // 🔧 FUNGSI DEEP COPY (SALINAN DALAM) UNTUK OBJEK SOAL
+        // ================================================================
+        function deepCopyQuestion(q) {
+            return {
+                q: q.q,
+                o: [...q.o],     // salinan baru array pilihan
+                a: q.a
+            };
+        }
+
         function startNewRound() {
-            // Acak bank soal dan ambil 10
+            // 1. Acak bank soal (hanya urutannya saja, tanpa mengubah objek)
             shuffleArray(masterQuestions);
-            currentRoundQuestions = masterQuestions.slice(0, QUESTIONS_PER_ROUND);
             
-            // Acak posisi pilihan jawaban di setiap soal (DENGAN LOGIKA YANG BENAR)
+            // 2. Ambil 10 soal pertama, tapi buat SALINAN DALAM dari setiap objek
+            //    agar masterQuestions tetap murni dan tidak pernah berubah.
+            const rawQuestions = masterQuestions.slice(0, QUESTIONS_PER_ROUND);
+            currentRoundQuestions = rawQuestions.map(q => deepCopyQuestion(q));
+
+            // 3. Acak posisi pilihan jawaban di setiap soal (AMAN, karena ini salinan)
             currentRoundQuestions.forEach(q => {
-                // 1. SIMPAN DULU teks jawaban yang benar SEBELUM diacak
+                // Simpan teks jawaban benar SEBELUM diacak
                 const correctAnswerText = q.o[q.a];
                 
-                // 2. Buat pasangan [teks, indeks] lalu acak
+                // Buat pasangan [teks, indeks] lalu acak
                 const paired = q.o.map((text, idx) => ({ text, idx }));
                 shuffleArray(paired);
                 
-                // 3. Timpa array o dengan teks yang sudah diacak
+                // Timpa array o dengan teks yang sudah diacak
                 q.o = paired.map(p => p.text);
                 
-                // 4. Cari posisi baru dari teks jawaban benar yang sudah disimpan tadi
+                // Cari posisi baru dari teks jawaban benar yang sudah disimpan
                 q.a = q.o.indexOf(correctAnswerText);
             });
 
+            // 4. Reset state
             currentIndex = 0;
             score = 0;
             isAnswered = false;
